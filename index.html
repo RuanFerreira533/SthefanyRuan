@@ -198,6 +198,10 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 .capa-texto .local{font-style:italic;font-size:3.6cqw;margin-top:3cqw;color:var(--apagado)}
 @media (prefers-reduced-motion:reduce){.camada{animation:none}.petala{display:none}}
 
+/* ---------- emenda desfocada entre a capa e a contagem ---------- */
+.emenda{position:relative;height:0;z-index:2}
+.emenda::before{content:"";position:absolute;left:0;right:0;top:-7vh;height:14vh;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask:linear-gradient(transparent,#000 50%,transparent);mask:linear-gradient(transparent,#000 50%,transparent)}
+
 /* ---------- contagem: a janela ---------- */
 /* Arte: arte/janela.webp (941x1672). Vão da janela: x 286–674, y 641–1183; o gato dorme no canto de baixo à direita,
    então os números ficam em x 300–660, y 660–1100 (em %: 31.9 / 39.5 / 38.3 / 26.3). Usa o mesmo .quadro da capa. */
@@ -330,6 +334,7 @@ footer .faixa{height:64px;margin-top:30px}
     </div>
   </header>
 
+  <div class="emenda" aria-hidden="true"></div>
   <section class="contagem" aria-labelledby="t-contagem">
     <div class="quadro">
       <img class="arte-fundo" src="arte/janela.webp" alt="" loading="lazy">
