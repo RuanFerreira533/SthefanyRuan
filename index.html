@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convite de casamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<script>
+/* =====================================================================
+   TUDO QUE VOCÊS PRECISAM MUDAR ESTÁ AQUI.
+   Troque os textos entre aspas. Deixe "" para esconder uma seção.
+   ===================================================================== */
+const CONVITE = {
+  noiva: "Sthefany",
+  noivo: "Ruan",
+
+  // Dia e hora da cerimônia (horário de Brasília). Formato: AAAA-MM-DDTHH:MM:00-03:00
+  data: "2027-01-01T16:30:00-03:00",
+  cidade: "Cidade a definir",
+  frase: "Convidamos você para celebrar o nosso casamento",
+
+  // Um item por parágrafo. [] esconde a seção.
+  historia: [
+    "Aqui entra a história de vocês: como se conheceram, o primeiro encontro, o pedido.",
+    "Dois ou três parágrafos curtos ficam melhores no celular do que um texto longo.",
+  ],
+  // Fotos do pré-wedding, ex.: "fotos/1.jpg". "" mostra um espaço reservado.
+  fotos: ["", "", ""],
+
+  // "mapa" vazio = o botão procura o endereço no Google Maps sozinho.
+  cerimonia: { nome: "Local da cerimônia", endereco: "Endereço a definir", mapa: "" },
+  recepcao:  { nome: "Local da recepção", endereco: "Endereço a definir", hora: "18h30", mapa: "" }, // null se for no mesmo lugar
+
+  programacao: [
+    { hora: "16h30", item: "Cerimônia" },
+    { hora: "17h30", item: "Fotos e coquetel" },
+    { hora: "19h00", item: "Jantar" },
+    { hora: "20h30", item: "Bolo e brinde" },
+    { hora: "21h00", item: "Primeira dança e festa" },
+  ],
+
+  traje: "Esporte fino",
+
+  presentes: {
+    link: "",                       // link da lista de presentes (loja, site de casamento)
+    pix: "chave-pix-de-exemplo",    // chave PIX
+  },
+
+  rsvp: {
+    url: "",                        // endereço do Google Apps Script (vazio = modo de exemplo, nada é enviado)
+    prazo: "1 de dezembro de 2026",
+  },
+
+  musica: "",                       // ex.: "musica.mp3"
+
+  // Um convite por linha. O link fica: seusite.com/?c=CODIGO
+  // shortcut: lista visível no código da página; mover para a planilha antes de publicar.
+  convidados: {
+    sthefany: { nome: "Sthefany", max: 1 },
+  },
+};
+</script>
+
+<style>
+:root{
+  --cal:#FCFBF7; --azul:#1F4A8A; --tinta:#17345F; --apagado:#56688A;
+  --ocre:#E3A72F; --verde:#2E6B45; --telha:#A94A2C; --vidro:#EEF3F8;
+  --textura:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .47 0 0 0 0 .4 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  --pedras:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='32'%3E%3Crect width='60' height='32' fill='%238B8273'/%3E%3Cg fill='%23A79E8F' stroke='%236E6658'%3E%3Cellipse cx='10' cy='8' rx='9' ry='6'/%3E%3Cellipse cx='31' cy='7' rx='10' ry='5.5'/%3E%3Cellipse cx='52' cy='9' rx='8' ry='6'/%3E%3Cellipse cx='0' cy='24' rx='8' ry='6'/%3E%3Cellipse cx='20' cy='24' rx='10' ry='6'/%3E%3Cellipse cx='42' cy='23' rx='9' ry='6'/%3E%3Cellipse cx='60' cy='24' rx='8' ry='6'/%3E%3C/g%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--cal) var(--textura);color:var(--tinta);font:400 19px/1.65 'Cormorant Garamond',Georgia,serif;-webkit-font-smoothing:antialiased}
+body.travado{overflow:hidden}
+html,body{overflow-x:clip} /* o convite ampliado atrás da porta não pode alargar a página no celular */
+:focus-visible{outline:2px solid var(--ocre);outline-offset:3px}
+.script{font-family:'Great Vibes',cursive;font-weight:400}
+main{max-width:460px;margin:0 auto}
+section{padding:64px 28px;text-align:center}
+h2{font-weight:600;font-size:30px;line-height:1.2;color:var(--azul)}
+h2::after{content:"";display:block;width:36px;height:3px;background:var(--ocre);margin:14px auto 0}
+.pedras{background:var(--pedras)}
+.botao{display:inline-block;margin-top:16px;padding:10px 24px;background:var(--ocre);color:var(--tinta);font:600 18px 'Cormorant Garamond',serif;border:0;border-radius:2px;text-decoration:none;cursor:pointer}
+
+/* ---------- entrada: a porta ---------- */
+/* Arte: arte/porta-larga.webp (1672x941). Porta na arte: x 714–972, y 194–790.
+   A porta fica no centro da tela (x 843 = 50.42%); no celular cabe sempre a largura de x 300 a 1386 (planta inteira).
+   Se trocar a arte, refaça esses números. */
+#entrada{
+  --vw:100vw; --vh:100vh;                                /* o JS troca pelo tamanho real da tela */
+  --W:min(var(--vw) * 1.5396, var(--vh) * 1.7768);           /* largura da arte na tela */
+  --H:calc(var(--W) / 1.7768);
+  --x0:calc(var(--vw) / 2 - var(--W) * .5042);
+  --y0:calc(var(--vh) - var(--H) - min(var(--H) * .06, (var(--vh) - var(--H)) * .5)); /* sobra em cima vira parede; embaixo, no máximo uma faixa de chão */
+  --dl:calc(var(--x0) + var(--W) * .4270);
+  --dt:calc(var(--y0) + var(--H) * .2062);
+  --dw:calc(var(--W) * .1543);
+  --dh:calc(var(--H) * .6334);
+  --mancha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.03' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .62 0 0 0 0 .42 0 0 0 0 .2 0 0 0 .16 -.03'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23m)'/%3E%3C/svg%3E");
+  --furo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 258 596' preserveAspectRatio='none'%3E%3Cpath d='M0 596V129A129 129 0 0 1 258 129V596Z'/%3E%3C/svg%3E");
+  position:fixed;inset:0;z-index:50;overflow:hidden;cursor:pointer;transition:opacity .35s ease;
+}
+#entrada.sumindo{opacity:0}
+.zoom{position:absolute;inset:0;transform-origin:calc(var(--dl) + var(--dw) / 2) calc(var(--dt) + var(--dh) / 2);transition:transform 1.6s cubic-bezier(.6,0,.3,1);will-change:transform}
+#entrada.entrando .zoom{transform:translateY(var(--subida,0px)) scale(11)} /* a câmera sobe junto com o convite: os nomes ficam no vão até o fim */
+/* a parede inteira, com um vão no formato da porta: o convite de verdade aparece por ele */
+.parede{position:absolute;inset:0;background:var(--mancha),var(--textura),linear-gradient(#FDDCA3,#FBCB88 86%,#F0BC7A 90%);
+  -webkit-mask:linear-gradient(#000 0 0),var(--furo) calc(var(--dl) + 1px) calc(var(--dt) + 1px)/calc(var(--dw) - 2px) calc(var(--dh) - 1px) no-repeat;
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0),var(--furo) calc(var(--dl) + 1px) calc(var(--dt) + 1px)/calc(var(--dw) - 2px) calc(var(--dh) - 1px) no-repeat;
+  mask-composite:exclude;
+  transition:opacity .6s .45s ease-in}
+#entrada.entrando .parede{opacity:0} /* na metade da entrada a parede some, para a planta ampliada não passar por cima do convite */
+.cena{position:absolute;left:var(--x0);top:var(--y0);width:var(--W);height:var(--H);container-type:inline-size}
+.cena img{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.cena .arte{-webkit-mask:linear-gradient(transparent,#000 4.5%);mask:linear-gradient(transparent,#000 4.5%)} /* topo se funde na parede lisa */
+/* chão continua para baixo (cópia espelhada, só a faixa do chão) */
+.cena .chao1{top:100%;transform:scaleY(-1)}
+/* telas muito largas: a arte continua para os lados espelhada; longe da emenda só o chão continua */
+.cena .esq1{left:-100%;transform:scaleX(-1)}
+.cena .dir1{left:100%;transform:scaleX(-1)}
+.chao1{-webkit-mask:linear-gradient(transparent 94%,#000 94.3%);mask:linear-gradient(transparent 94%,#000 94.3%)} /* só as últimas linhas: sem pé do vaso nem rabo do gato */
+.esq1{-webkit-mask:linear-gradient(to right,#000 14%,transparent 17%);mask:linear-gradient(to right,#000 14%,transparent 17%)}
+.dir1{-webkit-mask:linear-gradient(to left,#000 20%,transparent 24%);mask:linear-gradient(to left,#000 20%,transparent 24%)}
+.luz-chao{position:absolute;inset:0;clip-path:polygon(43% 84%,58% 84%,67% 100%,34% 100%);background:linear-gradient(rgba(255,228,160,.9),rgba(255,228,160,0) 90%);mix-blend-mode:screen;opacity:0;transition:opacity 1.3s .35s ease-out}
+.brilho{position:absolute;inset:0;background:radial-gradient(ellipse 17% 34% at 50.4% 56%,rgba(255,214,140,.55),rgba(255,214,140,0));mix-blend-mode:screen;opacity:0;transition:opacity 1.3s .35s ease-out}
+#entrada.aberta :is(.luz-chao,.brilho){opacity:1}
+.sombra-vao,.batente{position:absolute;left:42.70%;top:20.62%;width:15.43%;height:63.34%;border-radius:50% 50% 0 0/21.64% 21.64% 0 0}
+.sombra-vao{box-shadow:inset 0 0 2.5cqw rgba(70,30,8,.55);opacity:0;transition:opacity .8s .3s}
+#entrada.aberta .sombra-vao{opacity:1}
+.batente{overflow:hidden;perspective:40cqw}
+#porta{position:absolute;inset:0;padding:0;border:0;background:none;cursor:pointer;transform-origin:left center;overflow:hidden;border-radius:inherit}
+#porta img{max-width:none;width:648.06%;height:auto;left:-276.74%;top:-32.55%}
+#porta::after{content:"";position:absolute;inset:0;background:#2A1205;opacity:0;transition:opacity 1.8s .2s}
+#entrada.aberta #porta{animation:abrir 2s forwards}
+#entrada.aberta #porta::after{opacity:.5}
+@keyframes abrir{
+  0%{transform:rotateY(0);animation-timing-function:cubic-bezier(.3,0,.4,1)}
+  11%{transform:rotateY(7deg);animation-timing-function:ease-in-out}
+  19%{transform:rotateY(4deg);animation-timing-function:cubic-bezier(.4,0,.1,1)}
+  100%{transform:rotateY(110deg)}
+}
+/* plaquinha com o nome, pregada na parede: acima da porta em tela larga; na parede de cima no celular */
+.placa{position:absolute;left:calc(var(--x0) + var(--W) * .5042);top:calc(var(--y0) + var(--H) * .119);transform:translate(-50%,-50%) rotate(-1.2deg);
+  font-size:max(13px,calc(var(--W) * .0135));font-style:italic;font-weight:600;line-height:1.2;white-space:nowrap;color:#6E3418;
+  padding:.35em 1.2em;border-radius:.25em;background:linear-gradient(#FFF8EA,#F4E3C4);border:.08em solid #B5603A;
+  box-shadow:0 .15em .3em rgba(110,60,20,.35),inset 0 0 0 .2em #FFF8EA,inset 0 0 0 .26em rgba(181,96,58,.5)}
+.placa::before,.placa::after{content:"";position:absolute;top:50%;width:.34em;height:.34em;margin-top:-.17em;border-radius:50%;background:radial-gradient(circle at 35% 35%,#E2CFAE,#6B5440 60%,#3E2E22);box-shadow:0 .06em .1em rgba(0,0,0,.4)}
+.placa::before{left:.42em}
+.placa::after{right:.42em}
+@media (orientation:portrait){
+  .placa{top:calc(var(--y0) * .72);font-size:clamp(18px,5.6vw,30px)}
+}
+body.travado main{transform:translateY(var(--desloc,0px)) scale(1.12);transform-origin:50% var(--origem,55vh)} /* os nomes da capa ficam bem no vão da porta */
+body.travado.entrando main{transform:none;transition:transform 1.6s cubic-bezier(.6,0,.3,1)}
+
+/* ---------- capa: a moldura ---------- */
+/* Arte: arte/moldura.webp (1000x1500). Área livre no meio: x 24–86%, y 20–76%.
+   Galhos que balançam (posição e tamanho em % da arte): buganvília de cima à esquerda, palmeira de cima, palmeira do meio à direita.
+   A arte de fundo tem um "buraco" suave onde fica cada galho, e o galho é uma cópia por cima que gira de leve. */
+.capa{--galhoA:radial-gradient(ellipse 33% 20% at 22% 8%,#000 55%,transparent);
+  --galhoB:radial-gradient(ellipse 30% 17% at 88% 9%,#000 55%,transparent);
+  --galhoC:radial-gradient(ellipse 14% 11% at 95% 51%,#000 55%,transparent);
+  position:relative;aspect-ratio:2/3;overflow:hidden;container-type:inline-size;background:#F7ECD9}
+.camada{position:absolute;inset:0;background:url(arte/moldura.webp) 0 0/100% 100%}
+.camada.fundo{-webkit-mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);-webkit-mask-composite:source-out,source-over,source-over;
+  mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);mask-composite:subtract,add,add}
+.galhoA{-webkit-mask:var(--galhoA);mask:var(--galhoA);transform-origin:0 0;--giro:.9deg;animation:balanco 6s ease-in-out infinite alternate}
+.galhoB{-webkit-mask:var(--galhoB);mask:var(--galhoB);transform-origin:100% 0;--giro:-1.1deg;animation:balanco 7s ease-in-out -2s infinite alternate}
+.galhoC{-webkit-mask:var(--galhoC);mask:var(--galhoC);transform-origin:100% 51%;--giro:2deg;animation:balanco 4.5s ease-in-out -1s infinite alternate}
+/* as animações da capa só começam depois de entrar pela porta (senão a porta abre travando) */
+body.travado :is(.camada,.petala){animation-play-state:paused}
+.galhoA,.galhoB,.galhoC{will-change:transform}
+@keyframes balanco{from{transform:rotate(calc(var(--giro) * -1))}to{transform:rotate(var(--giro))}}
+.petala{position:absolute;left:var(--x);top:var(--y);width:2.4cqw;height:1.8cqw;border-radius:80% 0 55% 50%/55% 0 80% 50%;background:linear-gradient(135deg,#F07DA3,#D8386E);opacity:0;animation:cair var(--t) linear var(--atraso) infinite}
+@keyframes cair{
+  0%{opacity:0;transform:translate(0,-3cqw) rotate(0)}
+  6%{opacity:.95}
+  30%{transform:translate(calc(var(--dx) * .5),45cqw) rotate(140deg)}
+  55%{transform:translate(calc(var(--dx) * -.2),85cqw) rotate(250deg)}
+  80%{transform:translate(calc(var(--dx) * .7),125cqw) rotate(360deg)}
+  92%{opacity:.9}
+  100%{opacity:0;transform:translate(var(--dx),155cqw) rotate(450deg)}
+}
+.capa-texto{position:absolute;left:52%;top:22%;width:56%;transform:translateX(-50%);text-align:center;color:var(--tinta)}
+.capa-texto h1{font-weight:400;line-height:.95}
+.capa-texto .nome{display:block;font-size:12.5cqw;color:var(--azul)}
+.capa-texto .e{display:block;font-size:6.5cqw;line-height:1.5;color:#C8416E}
+.capa-texto .frase{font-size:4cqw;line-height:1.35;max-width:24ch;margin:3.5cqw auto 0;color:var(--apagado)}
+.data-capa{display:flex;flex-direction:column;align-items:center;line-height:1.15;margin-top:4.5cqw;font-variant-numeric:lining-nums} /* a fonte desenha o 1 como I sem isso */
+.data-capa .mes,.data-capa .ano{font-size:3.8cqw;letter-spacing:.12em}
+.data-capa .dia{display:flex;align-items:center;gap:3cqw;margin:1cqw 0;font-size:11cqw;font-weight:600;line-height:1;color:var(--azul)}
+.data-capa .semana{font-style:italic;font-size:3.6cqw;color:var(--apagado)}
+.flor{width:4.5cqw;height:4.5cqw;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cg fill='%23D8386E'%3E%3Cellipse cx='10' cy='5.6' rx='3.5' ry='4.6'/%3E%3Cellipse cx='5.9' cy='12.4' rx='3.5' ry='4.6' transform='rotate(-120 5.9 12.4)'/%3E%3Cellipse cx='14.1' cy='12.4' rx='3.5' ry='4.6' transform='rotate(120 14.1 12.4)'/%3E%3C/g%3E%3Ccircle cx='10' cy='10.4' r='1.7' fill='%23F2C14E'/%3E%3C/svg%3E") center/contain no-repeat}
+.capa-texto .local{font-style:italic;font-size:3.6cqw;margin-top:3cqw;color:var(--apagado)}
+@media (prefers-reduced-motion:reduce){.camada{animation:none}.petala{display:none}}
+
+/* ---------- contagem: a janela ---------- */
+.janela-wrap{display:flex;justify-content:center;margin-top:30px}
+.veneziana{width:30px;background:repeating-linear-gradient(180deg,var(--verde) 0 9px,#245636 9px 12px);border:3px solid #245636}
+.janela{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--azul);border:10px solid var(--ocre);padding:6px;width:220px}
+.vidro{background:var(--vidro);padding:14px 4px 10px}
+.vidro b{display:block;font-size:40px;font-weight:600;line-height:1;color:var(--azul);font-variant-numeric:tabular-nums}
+.vidro span{font-style:italic;font-size:16px}
+
+/* ---------- história ---------- */
+.historia p{max-width:34ch;margin:0 auto}
+.historia p + p{margin-top:14px}
+.historia .assinatura{font-size:34px;color:var(--azul);margin-top:20px}
+.fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:30px}
+.fotos > *{width:100%;aspect-ratio:3/4;object-fit:cover;border:6px solid #fff;box-shadow:0 1px 4px rgba(23,52,95,.2)}
+.fotos > :first-child{grid-column:1/-1;aspect-ratio:4/3}
+.foto-vazia{display:grid;place-items:center;background:var(--vidro);color:var(--apagado);font-style:italic;font-size:16px;outline:1px dashed #9FB0C8;outline-offset:-12px}
+
+/* ---------- cerimônia: a porta azul ---------- */
+.celebracao{padding:24px 16px}
+.porta-azul{position:relative;background:var(--azul);color:var(--cal);padding:60px 26px 52px;border-radius:50% 50% 0 0/26px 26px 0 0}
+.porta-azul::before{content:"";position:absolute;inset:10px;border:2px solid var(--ocre);border-radius:inherit;pointer-events:none}
+.porta-azul h2{color:var(--cal)}
+.lugar{margin-top:30px}
+.lugar + .lugar{margin-top:40px}
+.lugar h3{font-style:italic;font-weight:400;font-size:19px;color:var(--ocre)}
+.lugar .nome-lugar{font-size:25px;font-weight:600;line-height:1.3}
+.lugar .endereco{opacity:.85}
+
+/* ---------- programação ---------- */
+.cal-mes{font-style:italic;margin-top:24px;color:var(--apagado)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:260px;margin:8px auto 34px;font-size:16px;line-height:30px}
+.cal .dsem{font-style:italic;color:var(--apagado)}
+.cal .dia-casamento{background:var(--azul);color:var(--cal);border-radius:50%;font-weight:600;box-shadow:0 0 0 2px var(--cal),0 0 0 4px var(--ocre)}
+.linha{list-style:none;padding:0;margin:0 auto;max-width:300px;text-align:left;position:relative}
+.linha::before{content:"";position:absolute;left:74px;top:14px;bottom:14px;width:2px;background:var(--ocre)}
+.linha li{display:grid;grid-template-columns:62px 1fr;gap:28px;padding:10px 0;position:relative}
+.linha li::before{content:"";position:absolute;left:67px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--cal);border:2px solid var(--azul)}
+.linha time{font-weight:600;text-align:right;color:var(--azul)}
+
+/* ---------- presentes ---------- */
+.presentes p{max-width:32ch;margin:0 auto}
+.pix{margin:22px auto 0;max-width:320px;padding:18px;background:#fff;border:1px solid #C9D3E2}
+.pix .chave{display:block;font-weight:600;font-size:19px;word-break:break-all;margin:4px 0 0}
+
+/* ---------- confirmação ---------- */
+form{max-width:340px;margin:26px auto 0;text-align:left;display:grid;gap:20px}
+.campo-titulo{font-style:italic;font-size:17px;color:var(--apagado);display:block;margin-bottom:6px}
+input[type=text],select,textarea{width:100%;font:inherit;color:var(--tinta);background:#fff;border:1px solid #B9C6D8;border-radius:2px;padding:10px 12px}
+input[readonly]{background:transparent;border-color:transparent;padding:0;font-weight:600;font-size:24px}
+fieldset{border:0;padding:0;min-width:0}
+.escolha{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.escolha label{position:relative;text-align:center;border:1px solid var(--azul);padding:10px 6px;cursor:pointer;color:var(--azul);font-weight:600}
+.escolha input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.escolha label:has(input:checked){background:var(--azul);color:var(--cal)}
+.escolha label:has(input:focus-visible){outline:2px solid var(--ocre);outline-offset:3px}
+form .botao{width:100%;margin:0;background:var(--azul);color:var(--cal);padding:13px}
+form .botao:disabled{opacity:.6}
+.prazo{font-style:italic;color:var(--apagado);margin-top:10px}
+.resposta{text-align:center;font-size:21px;margin-top:26px}
+.resposta small{display:block;font-size:16px;font-style:italic;color:var(--apagado);margin-top:8px}
+
+/* ---------- rodapé ---------- */
+footer{text-align:center;padding-top:40px}
+footer .script{font-size:42px;color:var(--azul)}
+footer .faixa{height:64px;margin-top:30px}
+
+#musica{position:fixed;left:16px;bottom:16px;z-index:20;width:48px;height:48px;border-radius:50%;border:0;background:var(--azul);color:var(--cal);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 10px rgba(23,52,95,.35)}
+#musica[aria-pressed=false]{opacity:.65}
+
+</style>
+</head>
+<body class="travado">
+
+<div id="entrada">
+  <div class="zoom">
+    <div class="parede">
+      <div class="cena">
+        <img class="chao1" src="arte/porta-larga.webp" alt="">
+        <img class="esq1" src="arte/porta-larga.webp" alt="">
+        <img class="dir1" src="arte/porta-larga.webp" alt="">
+        <img class="arte" src="arte/porta-larga.webp" alt="">
+        <div class="brilho"></div>
+        <div class="luz-chao"></div>
+      </div>
+      <p class="placa" id="placa">Um convite para você</p>
+    </div>
+    <div class="cena">
+      <div class="sombra-vao"></div>
+      <div class="batente"><button id="porta" aria-label="Abrir o convite"><img src="arte/porta-larga.webp" alt=""></button></div>
+    </div>
+  </div>
+</div>
+
+<main id="conteudo">
+  <header class="capa">
+    <div class="camada fundo"></div>
+    <div class="camada galhoA" aria-hidden="true"></div>
+    <div class="camada galhoB" aria-hidden="true"></div>
+    <div class="camada galhoC" aria-hidden="true"></div>
+    <div aria-hidden="true">
+      <i class="petala" style="--x:8%;--y:4%;--t:11s;--atraso:0s;--dx:10cqw"></i>
+      <i class="petala" style="--x:22%;--y:10%;--t:13s;--atraso:-4s;--dx:16cqw"></i>
+      <i class="petala" style="--x:35%;--y:3%;--t:10s;--atraso:-7s;--dx:8cqw"></i>
+      <i class="petala" style="--x:15%;--y:18%;--t:12s;--atraso:-2s;--dx:20cqw"></i>
+      <i class="petala" style="--x:44%;--y:6%;--t:14s;--atraso:-9s;--dx:-6cqw"></i>
+      <i class="petala" style="--x:93%;--y:22%;--t:12s;--atraso:-5s;--dx:-14cqw"></i>
+      <i class="petala" style="--x:96%;--y:30%;--t:10s;--atraso:-1s;--dx:-10cqw"></i>
+      <i class="petala" style="--x:27%;--y:1%;--t:15s;--atraso:-11s;--dx:12cqw"></i>
+    </div>
+    <div class="capa-texto">
+      <h1><span class="script nome" id="noiva"></span><span class="script e">&amp;</span><span class="script nome" id="noivo"></span></h1>
+      <p class="frase" id="frase"></p>
+      <p class="data-capa">
+        <span class="mes" id="mes"></span>
+        <span class="dia"><i class="flor"></i><span id="dia-num"></span><i class="flor"></i></span>
+        <span class="semana" id="semana"></span>
+        <span class="ano" id="ano"></span>
+      </p>
+      <p class="local" id="local-capa"></p>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-contagem">
+    <h2 id="t-contagem">Falta pouco</h2>
+    <div class="janela-wrap">
+      <div class="veneziana" aria-hidden="true"></div>
+      <div class="janela" role="timer" aria-live="off">
+        <div class="vidro"><b id="cd-d">0</b><span>dias</span></div>
+        <div class="vidro"><b id="cd-h">0</b><span>horas</span></div>
+        <div class="vidro"><b id="cd-m">0</b><span>minutos</span></div>
+        <div class="vidro"><b id="cd-s">0</b><span>segundos</span></div>
+      </div>
+      <div class="veneziana" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="historia" id="s-historia" aria-labelledby="t-historia">
+    <h2 id="t-historia">Nossa história</h2>
+    <div id="historia-texto" style="margin-top:26px"></div>
+    <p class="script assinatura" id="assinatura"></p>
+    <div class="fotos" id="fotos"></div>
+  </section>
+
+  <section class="celebracao" aria-labelledby="t-celebracao">
+    <div class="porta-azul">
+      <h2 id="t-celebracao">Cerimônia e recepção</h2>
+      <div id="lugares"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-programacao">
+    <h2 id="t-programacao">Programação</h2>
+    <p class="cal-mes" id="cal-mes"></p>
+    <div class="cal" id="cal"></div>
+    <ol class="linha" id="programacao"></ol>
+  </section>
+
+  <section id="s-traje" aria-labelledby="t-traje">
+    <h2 id="t-traje">Traje</h2>
+    <p id="traje" style="margin-top:22px;font-size:22px"></p>
+  </section>
+
+  <section class="presentes" id="s-presentes" aria-labelledby="t-presentes">
+    <h2 id="t-presentes">Presentes</h2>
+    <p style="margin-top:22px">Sua presença é o nosso maior presente. Se quiser nos presentear, fique à vontade.</p>
+    <a class="botao" id="link-presentes" target="_blank" rel="noopener" hidden>Ver lista de presentes</a>
+    <div class="pix" id="pix" hidden>
+      <span class="campo-titulo">Chave PIX</span>
+      <span class="chave" id="pix-chave"></span>
+      <button class="botao" id="copiar-pix" type="button">Copiar chave PIX</button>
+    </div>
+  </section>
+
+  <section id="s-rsvp" aria-labelledby="t-rsvp">
+    <h2 id="t-rsvp">Confirme sua presença</h2>
+    <p class="prazo" id="prazo"></p>
+    <form id="form-rsvp" novalidate>
+      <div>
+        <label class="campo-titulo" for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" autocomplete="name" required>
+      </div>
+      <fieldset>
+        <legend class="campo-titulo">Você vai?</legend>
+        <div class="escolha">
+          <label><input type="radio" name="vai" value="sim" checked>Sim, vou</label>
+          <label><input type="radio" name="vai" value="nao">Não poderei ir</label>
+        </div>
+      </fieldset>
+      <div id="linha-pessoas">
+        <label class="campo-titulo" for="pessoas">Quantas pessoas, contando com você</label>
+        <select id="pessoas" name="pessoas"></select>
+      </div>
+      <div>
+        <label class="campo-titulo" for="recado">Recado para os noivos (opcional)</label>
+        <textarea id="recado" name="recado" rows="3"></textarea>
+      </div>
+      <button class="botao" type="submit" id="enviar">Confirmar presença</button>
+    </form>
+    <div class="resposta" id="resposta" role="status" hidden></div>
+  </section>
+
+  <footer>
+    <p class="script" id="rodape-nomes"></p>
+    <p id="rodape-data" style="font-style:italic;color:var(--apagado)"></p>
+    <div class="faixa pedras"></div>
+  </footer>
+</main>
+
+<button id="musica" aria-label="Música" aria-pressed="false" hidden>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18.5a3 3 0 1 1-2-2.83V5l12-2v11.5a3 3 0 1 1-2-2.83V6.36L9 7.7z"/></svg>
+</button>
+
+<script>
+const $ = id => document.getElementById(id);
+const C = CONVITE;
+const quando = new Date(C.data);
+const fmt = o => new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', ...o }).format(quando);
+const maiuscula = s => s.charAt(0).toUpperCase() + s.slice(1);
+const mapa = l => l.mapa || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.nome + ', ' + l.endereco);
+
+const codigo = new URLSearchParams(location.search).get('c');
+const convidado = codigo && Object.hasOwn(C.convidados, codigo) ? C.convidados[codigo] : null;
+
+// ---------- textos ----------
+const nomes = `${C.noiva} & ${C.noivo}`;
+const horaCerimonia = fmt({ hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+document.title = `${nomes} – Convite de casamento`;
+$('noiva').textContent = C.noiva;
+$('noivo').textContent = C.noivo;
+$('frase').textContent = C.frase;
+$('mes').textContent = maiuscula(fmt({ month: 'long' }));
+$('dia-num').textContent = fmt({ day: 'numeric' });
+$('semana').textContent = fmt({ weekday: 'long' });
+$('ano').textContent = fmt({ year: 'numeric' });
+$('local-capa').textContent = `às ${horaCerimonia}, em ${C.cidade}`;
+$('rodape-nomes').textContent = nomes;
+$('rodape-data').textContent = fmt({ day: 'numeric', month: 'long', year: 'numeric' });
+if (convidado) {
+  $('placa').textContent = `Para ${convidado.nome}`;
+}
+
+// ---------- contagem ----------
+function partes(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return { d: Math.floor(s / 86400), h: Math.floor(s % 86400 / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 };
+}
+console.assert(JSON.stringify(partes(90061000)) === '{"d":1,"h":1,"m":1,"s":1}', 'partes() errada');
+function tick() {
+  const p = partes(quando - Date.now());
+  for (const k in p) $('cd-' + k).textContent = p[k];
+  if (quando <= Date.now()) { $('t-contagem').textContent = 'Chegou o grande dia'; clearInterval(relogio); }
+}
+const relogio = setInterval(tick, 1000);
+tick();
+
+// ---------- história ----------
+$('s-historia').hidden = !C.historia.length && !C.fotos.length;
+C.historia.forEach(t => { const p = document.createElement('p'); p.textContent = t; $('historia-texto').append(p); });
+$('assinatura').textContent = C.historia.length ? `${C.noiva} e ${C.noivo}` : '';
+C.fotos.forEach((src, i) => {
+  let el;
+  if (src) { el = document.createElement('img'); el.src = src; el.alt = `Foto do pré-wedding ${i + 1}`; el.loading = 'lazy'; }
+  else { el = document.createElement('div'); el.className = 'foto-vazia'; el.textContent = 'Foto do pré-wedding'; }
+  $('fotos').append(el);
+});
+
+// ---------- cerimônia e recepção ----------
+[['Cerimônia', C.cerimonia, horaCerimonia], ['Recepção', C.recepcao, C.recepcao?.hora]].forEach(([titulo, l, hora]) => {
+  if (!l) return;
+  const d = document.createElement('div');
+  d.className = 'lugar';
+  d.innerHTML = '<h3></h3><p class="nome-lugar"></p><p class="endereco"></p><p class="hora"></p><a class="botao" target="_blank" rel="noopener">Ver no mapa</a>';
+  d.querySelector('h3').textContent = titulo;
+  d.querySelector('.nome-lugar').textContent = l.nome;
+  d.querySelector('.endereco').textContent = l.endereco;
+  d.querySelector('.hora').textContent = hora ? `às ${hora}` : '';
+  d.querySelector('a').href = mapa(l);
+  $('lugares').append(d);
+});
+if (!C.recepcao) $('t-celebracao').textContent = 'Cerimônia';
+
+// ---------- programação + calendário ----------
+(function calendario() {
+  const ano = +fmt({ year: 'numeric' }), mes = +fmt({ month: 'numeric' }) - 1, dia = +fmt({ day: 'numeric' });
+  const vazios = new Date(ano, mes, 1).getDay(), total = new Date(ano, mes + 1, 0).getDate();
+  $('cal-mes').textContent = maiuscula(fmt({ month: 'long', year: 'numeric' }));
+  let html = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => `<span class="dsem">${d}</span>`).join('') + '<span></span>'.repeat(vazios);
+  for (let i = 1; i <= total; i++) html += i === dia ? `<span class="dia-casamento" aria-label="${i}, dia do casamento">${i}</span>` : `<span>${i}</span>`;
+  $('cal').innerHTML = html;
+})();
+C.programacao.forEach(p => {
+  const li = document.createElement('li');
+  li.innerHTML = '<time></time><span></span>';
+  li.firstChild.textContent = p.hora;
+  li.lastChild.textContent = p.item;
+  $('programacao').append(li);
+});
+
+// ---------- traje e presentes ----------
+$('s-traje').hidden = !C.traje;
+$('traje').textContent = C.traje;
+$('s-presentes').hidden = !C.presentes.link && !C.presentes.pix;
+if (C.presentes.link) { $('link-presentes').href = C.presentes.link; $('link-presentes').hidden = false; }
+if (C.presentes.pix) { $('pix-chave').textContent = C.presentes.pix; $('pix').hidden = false; }
+$('copiar-pix').addEventListener('click', e => {
+  navigator.clipboard.writeText(C.presentes.pix).then(
+    () => { e.target.textContent = 'Chave copiada'; },
+    () => { e.target.textContent = 'Selecione e copie a chave acima'; });
+});
+
+// ---------- confirmação ----------
+const max = convidado ? convidado.max : 1;
+$('prazo').textContent = C.rsvp.prazo ? `Por favor, confirme até ${C.rsvp.prazo}` : '';
+if (convidado) { $('nome').value = convidado.nome; $('nome').readOnly = true; }
+for (let i = 1; i <= max; i++) $('pessoas').add(new Option(i === 1 ? '1 pessoa' : `${i} pessoas`, i));
+const atualizaPessoas = () => { $('linha-pessoas').hidden = max === 1 || $('form-rsvp').vai.value === 'nao'; };
+$('form-rsvp').addEventListener('change', atualizaPessoas);
+atualizaPessoas();
+
+$('form-rsvp').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, nome = f.nome.value.trim();
+  if (!nome) { f.nome.focus(); f.nome.setCustomValidity('Escreva seu nome'); f.nome.reportValidity(); return; }
+  f.nome.setCustomValidity('');
+  const vai = f.vai.value === 'sim';
+  const dados = { codigo: codigo || '', nome, vai: vai ? 'Sim' : 'Não', pessoas: vai ? f.pessoas.value : 0, recado: f.recado.value.trim() };
+  $('enviar').disabled = true;
+  $('enviar').textContent = 'Enviando…';
+  let aviso = '';
+  if (C.rsvp.url) {
+    try {
+      // shortcut: no-cors não deixa ler a resposta do Apps Script; só detecta falha de rede.
+      await fetch(C.rsvp.url, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(dados) });
+    } catch {
+      $('enviar').disabled = false;
+      $('enviar').textContent = 'Confirmar presença';
+      alert('Não foi possível enviar. Verifique sua internet e tente de novo.');
+      return;
+    }
+  } else {
+    aviso = 'Modo de exemplo: nada foi enviado.';
+  }
+  f.hidden = true;
+  $('resposta').textContent = vai ? `Presença confirmada! Até lá, ${nome}.` : `Resposta enviada. Obrigado por avisar, ${nome}.`;
+  if (aviso) { const s = document.createElement('small'); s.textContent = aviso; $('resposta').append(s); }
+  $('resposta').hidden = false;
+});
+
+// ---------- música ----------
+const audio = C.musica ? new Audio(C.musica) : null;
+if (audio) {
+  audio.loop = true;
+  $('musica').hidden = false;
+  $('musica').addEventListener('click', () => { audio.paused ? audio.play() : audio.pause(); });
+  audio.addEventListener('play', () => $('musica').setAttribute('aria-pressed', 'true'));
+  audio.addEventListener('pause', () => $('musica').setAttribute('aria-pressed', 'false'));
+}
+
+// ---------- abrir a porta ----------
+// 100vh/100dvh nem sempre batem com a área visível no celular; mede a tela de verdade.
+const medirEntrada = () => {
+  const e = $("entrada");
+  e.style.setProperty("--vw", e.clientWidth + "px");
+  e.style.setProperty("--vh", e.clientHeight + "px");
+  // alinha o centro dos nomes (sem transformação) com o centro da porta
+  const p = $("porta").getBoundingClientRect(), t = document.querySelector(".capa-texto");
+  const centroNomes = t.offsetParent.offsetTop + t.offsetTop + t.offsetHeight * .3;
+  document.body.style.setProperty("--origem", centroNomes + "px");
+  const desloc = p.top + p.height / 2 - centroNomes;
+  document.body.style.setProperty("--desloc", desloc + "px");
+  e.style.setProperty("--subida", -desloc + "px");
+};
+medirEntrada();
+addEventListener("resize", medirEntrada);
+document.fonts.ready.then(medirEntrada);
+// Toque em qualquer lugar da entrada abre; o botão da porta serve para teclado e leitor de tela.
+$("entrada").addEventListener("click", () => {
+  const e = $("entrada");
+  if (e.classList.contains("aberta")) return;
+  const fim = () => { e.hidden = true; document.body.classList.remove("travado", "entrando"); };
+  audio?.play().catch(() => {});
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return fim();
+  e.classList.add("aberta");                       // destrava e abre (2s)
+  setTimeout(() => { e.classList.add("entrando"); document.body.classList.add("entrando"); }, 1250); // câmera entra pela porta
+  setTimeout(() => e.classList.add("sumindo"), 2600);
+  setTimeout(fim, 2950);
+});
+</script>
+</body>
+</html>
