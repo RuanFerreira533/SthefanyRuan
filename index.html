@@ -94,7 +94,7 @@ h2::after{content:"";display:block;width:36px;height:3px;background:var(--ocre);
   --W:min(var(--vw) * 1.5396, var(--vh) * 1.7768);           /* largura da arte na tela */
   --H:calc(var(--W) / 1.7768);
   --x0:calc(var(--vw) / 2 - var(--W) * .5042);
-  --y0:calc(var(--vh) - var(--H) - min(var(--H) * .06, (var(--vh) - var(--H)) * .5)); /* sobra em cima vira parede; embaixo, no máximo uma faixa de chão */
+  --y0:calc(var(--vh) / 2 - var(--H) * .5229);           /* o centro da porta (52.29% da altura da arte) fica no meio da tela */
   --dl:calc(var(--x0) + var(--W) * .4270);
   --dt:calc(var(--y0) + var(--H) * .2062);
   --dw:calc(var(--W) * .1543);
@@ -118,11 +118,10 @@ h2::after{content:"";display:block;width:36px;height:3px;background:var(--ocre);
 .cena img{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
 .cena .arte{-webkit-mask:linear-gradient(transparent,#000 4.5%);mask:linear-gradient(transparent,#000 4.5%)} /* topo se funde na parede lisa */
 /* chão continua para baixo (cópia espelhada, só a faixa do chão) */
-.cena .chao1{top:100%;transform:scaleY(-1)}
+.chao-ext{position:absolute;left:-100%;width:300%;top:100%;height:200vh;background:linear-gradient(rgba(240,188,122,0),rgba(240,188,122,.55) 45vh),url(arte/chao.webp) var(--W) 0/calc(var(--W) * .5024) auto} /* mais longe da porta, as pedras vão se dissolvendo */ /* chao.webp: as últimas linhas de pedra da arte, espelhadas para repetir sem emenda */
 /* telas muito largas: a arte continua para os lados espelhada; longe da emenda só o chão continua */
 .cena .esq1{left:-100%;transform:scaleX(-1)}
 .cena .dir1{left:100%;transform:scaleX(-1)}
-.chao1{-webkit-mask:linear-gradient(transparent 94%,#000 94.3%);mask:linear-gradient(transparent 94%,#000 94.3%)} /* só as últimas linhas: sem pé do vaso nem rabo do gato */
 .esq1{-webkit-mask:linear-gradient(to right,#000 14%,transparent 17%);mask:linear-gradient(to right,#000 14%,transparent 17%)}
 .dir1{-webkit-mask:linear-gradient(to left,#000 20%,transparent 24%);mask:linear-gradient(to left,#000 20%,transparent 24%)}
 .luz-chao{position:absolute;inset:0;clip-path:polygon(43% 84%,58% 84%,67% 100%,34% 100%);background:linear-gradient(rgba(255,228,160,.9),rgba(255,228,160,0) 90%);mix-blend-mode:screen;opacity:0;transition:opacity 1.3s .35s ease-out}
@@ -152,28 +151,28 @@ h2::after{content:"";display:block;width:36px;height:3px;background:var(--ocre);
 .placa::before{left:.42em}
 .placa::after{right:.42em}
 @media (orientation:portrait){
-  .placa{top:calc(var(--y0) * .72);font-size:clamp(18px,5.6vw,30px)}
+  .placa{top:calc(var(--y0) * .55);font-size:clamp(18px,5.6vw,30px)}
 }
 body.travado main{transform:translateY(var(--desloc,0px)) scale(1.12);transform-origin:50% var(--origem,55vh)} /* os nomes da capa ficam bem no vão da porta */
 body.travado.entrando main{transform:none;transition:transform 1.6s cubic-bezier(.6,0,.3,1)}
 
 /* ---------- capa: a moldura ---------- */
-/* Arte: arte/moldura.webp (1000x1500). Área livre no meio: x 24–86%, y 20–76%.
+/* Arte: arte/moldura.webp (941x1672, formato de celular). Área livre no meio: x 21–85%, y 18–82%.
    Galhos que balançam (posição e tamanho em % da arte): buganvília de cima à esquerda, palmeira de cima, palmeira do meio à direita.
    A arte de fundo tem um "buraco" suave onde fica cada galho, e o galho é uma cópia por cima que gira de leve. */
-.capa{--galhoA:radial-gradient(ellipse 33% 20% at 22% 8%,#000 55%,transparent);
-  --galhoB:radial-gradient(ellipse 30% 17% at 88% 9%,#000 55%,transparent);
-  --galhoC:radial-gradient(ellipse 14% 11% at 95% 51%,#000 55%,transparent);
-  position:relative;aspect-ratio:2/3;overflow:hidden;container-type:inline-size;background:#F7ECD9}
-.quadro{position:absolute;left:0;right:0;bottom:0;aspect-ratio:2/3}
-.quadro.reflexo{bottom:150cqw;transform:scaleY(-1)} /* cópia de cabeça para baixo logo acima: buganvília e palmeira continuam, e balançam juntas */
-@media (max-width:600px){.capa{aspect-ratio:auto;height:max(150vw,100vh);height:max(150vw,100svh)}} /* celular: a moldura ocupa a tela toda */
+.capa{--galhoA:radial-gradient(ellipse 35% 20% at 21% 12%,#000 55%,transparent);
+  --galhoB:radial-gradient(ellipse 32% 16% at 87% 11%,#000 55%,transparent);
+  --galhoC:radial-gradient(ellipse 15% 10% at 96% 59%,#000 55%,transparent);
+  position:relative;aspect-ratio:941/1672;overflow:hidden;container-type:inline-size;background:#F7ECD9}
+/* o quadro cobre a capa inteira (como object-fit: cover), sem distorcer; no celular a capa tem a altura da tela */
+.quadro{position:absolute;left:50%;top:50%;translate:-50% -50%;min-width:100%;min-height:100%;aspect-ratio:941/1672}
+@media (max-width:600px){.capa{aspect-ratio:auto;height:100vh;height:100dvh}}
 .camada{position:absolute;inset:0;background:url(arte/moldura.webp) 0 0/100% 100%}
 .camada.fundo{-webkit-mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);-webkit-mask-composite:source-out,source-over,source-over;
   mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);mask-composite:subtract,add,add}
 .galhoA{-webkit-mask:var(--galhoA);mask:var(--galhoA);transform-origin:0 0;--giro:.9deg;animation:balanco 6s ease-in-out infinite alternate}
 .galhoB{-webkit-mask:var(--galhoB);mask:var(--galhoB);transform-origin:100% 0;--giro:-1.1deg;animation:balanco 7s ease-in-out -2s infinite alternate}
-.galhoC{-webkit-mask:var(--galhoC);mask:var(--galhoC);transform-origin:100% 51%;--giro:2deg;animation:balanco 4.5s ease-in-out -1s infinite alternate}
+.galhoC{-webkit-mask:var(--galhoC);mask:var(--galhoC);transform-origin:100% 59%;--giro:2deg;animation:balanco 4.5s ease-in-out -1s infinite alternate}
 /* as animações da capa só começam depois de entrar pela porta (senão a porta abre travando) */
 body.travado :is(.camada,.petala){animation-play-state:paused}
 .galhoA,.galhoB,.galhoC{will-change:transform}
@@ -188,7 +187,7 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
   92%{opacity:.9}
   100%{opacity:0;transform:translate(var(--dx),155cqw) rotate(450deg)}
 }
-.capa-texto{position:absolute;left:52%;top:22%;width:56%;transform:translateX(-50%);text-align:center;color:var(--tinta)}
+.capa-texto{position:absolute;left:52%;top:25%;width:56%;transform:translateX(-50%);text-align:center;color:var(--tinta)}
 .capa-texto h1{font-weight:400;line-height:.95}
 .capa-texto .nome{display:block;font-size:12.5cqw;color:var(--azul)}
 .capa-texto .e{display:block;font-size:6.5cqw;line-height:1.5;color:#C8416E}
@@ -278,7 +277,7 @@ footer .faixa{height:64px;margin-top:30px}
   <div class="zoom">
     <div class="parede">
       <div class="cena">
-        <img class="chao1" src="arte/porta-larga.webp" alt="">
+        <div class="chao-ext"></div>
         <img class="esq1" src="arte/porta-larga.webp" alt="">
         <img class="dir1" src="arte/porta-larga.webp" alt="">
         <img class="arte" src="arte/porta-larga.webp" alt="">
@@ -296,12 +295,6 @@ footer .faixa{height:64px;margin-top:30px}
 
 <main id="conteudo">
   <header class="capa">
-    <div class="quadro reflexo" aria-hidden="true">
-    <div class="camada fundo" aria-hidden="true"></div>
-    <div class="camada galhoA" aria-hidden="true"></div>
-    <div class="camada galhoB" aria-hidden="true"></div>
-    <div class="camada galhoC" aria-hidden="true"></div>
-    </div>
     <div class="quadro">
     <div class="camada fundo"></div>
     <div class="camada galhoA" aria-hidden="true"></div>
@@ -575,8 +568,10 @@ const medirEntrada = () => {
   e.style.setProperty("--vh", e.clientHeight + "px");
   // alinha o centro dos nomes (sem transformação) com o centro da porta
   const p = $("porta").getBoundingClientRect(), t = document.querySelector(".capa-texto");
-  let centroNomes = t.offsetHeight * .3;
-  for (let el = t; el; el = el.offsetParent) centroNomes += el.offsetTop;
+  const capa = document.querySelector(".capa"), rc = capa.getBoundingClientRect(), rt = t.getBoundingClientRect();
+  const escala = rc.width / capa.offsetWidth; // o convite atrás da porta está ampliado
+  let centroNomes = (rt.top - rc.top + rt.height * .3) / escala;
+  for (let el = capa; el; el = el.offsetParent) centroNomes += el.offsetTop;
   document.body.style.setProperty("--origem", centroNomes + "px");
   const desloc = p.top + p.height / 2 - centroNomes;
   document.body.style.setProperty("--desloc", desloc + "px");
