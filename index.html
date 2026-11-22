@@ -107,7 +107,7 @@ h2::after{content:"";display:block;width:36px;height:3px;background:var(--ocre);
 .zoom{position:absolute;inset:0;transform-origin:calc(var(--dl) + var(--dw) / 2) calc(var(--dt) + var(--dh) / 2);transition:transform 1.6s cubic-bezier(.6,0,.3,1);will-change:transform}
 #entrada.entrando .zoom{transform:translateY(var(--subida,0px)) scale(11)} /* a câmera sobe junto com o convite: os nomes ficam no vão até o fim */
 /* a parede inteira, com um vão no formato da porta: o convite de verdade aparece por ele */
-.parede{position:absolute;inset:0;background:var(--mancha),var(--textura),linear-gradient(#FDDCA3,#FBCB88 86%,#F0BC7A 90%);
+.parede{position:absolute;inset:0;background:url(arte/parede.webp) var(--x0) var(--y0)/calc(var(--W) * .4067) auto,linear-gradient(#FDDCA3,#FBCB88 86%,#F0BC7A 90%); /* parede.webp: pedaço liso da própria arte, espelhado para repetir sem emenda */
   -webkit-mask:linear-gradient(#000 0 0),var(--furo) calc(var(--dl) + 1px) calc(var(--dt) + 1px)/calc(var(--dw) - 2px) calc(var(--dh) - 1px) no-repeat;
   -webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0),var(--furo) calc(var(--dl) + 1px) calc(var(--dt) + 1px)/calc(var(--dw) - 2px) calc(var(--dh) - 1px) no-repeat;
@@ -165,6 +165,9 @@ body.travado.entrando main{transform:none;transition:transform 1.6s cubic-bezier
   --galhoB:radial-gradient(ellipse 30% 17% at 88% 9%,#000 55%,transparent);
   --galhoC:radial-gradient(ellipse 14% 11% at 95% 51%,#000 55%,transparent);
   position:relative;aspect-ratio:2/3;overflow:hidden;container-type:inline-size;background:#F7ECD9}
+.quadro{position:absolute;left:0;right:0;bottom:0;aspect-ratio:2/3}
+.quadro.reflexo{bottom:150cqw;transform:scaleY(-1)} /* cópia de cabeça para baixo logo acima: buganvília e palmeira continuam, e balançam juntas */
+@media (max-width:600px){.capa{aspect-ratio:auto;height:max(150vw,100vh);height:max(150vw,100svh)}} /* celular: a moldura ocupa a tela toda */
 .camada{position:absolute;inset:0;background:url(arte/moldura.webp) 0 0/100% 100%}
 .camada.fundo{-webkit-mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);-webkit-mask-composite:source-out,source-over,source-over;
   mask:linear-gradient(#000 0 0),var(--galhoA),var(--galhoB),var(--galhoC);mask-composite:subtract,add,add}
@@ -293,6 +296,13 @@ footer .faixa{height:64px;margin-top:30px}
 
 <main id="conteudo">
   <header class="capa">
+    <div class="quadro reflexo" aria-hidden="true">
+    <div class="camada fundo" aria-hidden="true"></div>
+    <div class="camada galhoA" aria-hidden="true"></div>
+    <div class="camada galhoB" aria-hidden="true"></div>
+    <div class="camada galhoC" aria-hidden="true"></div>
+    </div>
+    <div class="quadro">
     <div class="camada fundo"></div>
     <div class="camada galhoA" aria-hidden="true"></div>
     <div class="camada galhoB" aria-hidden="true"></div>
@@ -317,6 +327,7 @@ footer .faixa{height:64px;margin-top:30px}
         <span class="ano" id="ano"></span>
       </p>
       <p class="local" id="local-capa"></p>
+    </div>
     </div>
   </header>
 
@@ -564,7 +575,8 @@ const medirEntrada = () => {
   e.style.setProperty("--vh", e.clientHeight + "px");
   // alinha o centro dos nomes (sem transformação) com o centro da porta
   const p = $("porta").getBoundingClientRect(), t = document.querySelector(".capa-texto");
-  const centroNomes = t.offsetParent.offsetTop + t.offsetTop + t.offsetHeight * .3;
+  let centroNomes = t.offsetHeight * .3;
+  for (let el = t; el; el = el.offsetParent) centroNomes += el.offsetTop;
   document.body.style.setProperty("--origem", centroNomes + "px");
   const desloc = p.top + p.height / 2 - centroNomes;
   document.body.style.setProperty("--desloc", desloc + "px");
