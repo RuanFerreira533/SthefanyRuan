@@ -198,9 +198,9 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 .capa-texto .local{font-style:italic;font-size:3.6cqw;margin-top:3cqw;color:var(--apagado)}
 @media (prefers-reduced-motion:reduce){.camada{animation:none}.petala{display:none}}
 
-/* ---------- emenda desfocada entre a capa e a contagem ---------- */
+/* ---------- guirlanda de buganvília na emenda entre a capa e a contagem (arte/guirlanda.webp, 681x370, fundo transparente) ---------- */
 .emenda{position:relative;height:0;z-index:2}
-.emenda::before{content:"";position:absolute;left:0;right:0;top:-7vh;height:14vh;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask:linear-gradient(transparent,#000 50%,transparent);mask:linear-gradient(transparent,#000 50%,transparent)}
+.emenda::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:681/370;transform:translateY(-50%);background:url(arte/guirlanda.webp) center/100% 100% no-repeat;pointer-events:none}
 
 /* ---------- contagem: a janela ---------- */
 /* Arte: arte/janela.webp (941x1672). Vão da janela: x 286–674, y 641–1183; o gato dorme no canto de baixo à direita,
