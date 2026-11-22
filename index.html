@@ -199,12 +199,18 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.camada{animation:none}.petala{display:none}}
 
 /* ---------- contagem: a janela ---------- */
-.janela-wrap{display:flex;justify-content:center;margin-top:30px}
-.veneziana{width:30px;background:repeating-linear-gradient(180deg,var(--verde) 0 9px,#245636 9px 12px);border:3px solid #245636}
-.janela{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--azul);border:10px solid var(--ocre);padding:6px;width:220px}
-.vidro{background:var(--vidro);padding:14px 4px 10px}
-.vidro b{display:block;font-size:40px;font-weight:600;line-height:1;color:var(--azul);font-variant-numeric:tabular-nums}
-.vidro span{font-style:italic;font-size:16px}
+/* Arte: arte/janela.webp (941x1672). Vão da janela: x 286–674, y 641–1183; o gato dorme no canto de baixo à direita,
+   então os números ficam em x 300–660, y 660–1100 (em %: 31.9 / 39.5 / 38.3 / 26.3). Usa o mesmo .quadro da capa. */
+.contagem{position:relative;aspect-ratio:941/1672;overflow:hidden;container-type:inline-size;padding:0;background:#F8D9A6}
+@media (max-width:600px){.contagem{aspect-ratio:auto;height:100vh;height:100dvh}}
+.quadro > .arte-fundo{position:absolute;inset:0;width:100%;height:100%;display:block}
+.no-vao{position:absolute;left:31.9%;top:39.5%;width:38.3%;height:26.3%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5cqw;color:var(--tinta)}
+.no-vao h2{font-family:'Great Vibes',cursive;font-weight:400;font-size:8cqw;line-height:1;color:var(--azul)}
+.no-vao h2::after{display:none}
+.relogio{display:grid;grid-template-columns:1fr 1fr;gap:2.5cqw 5cqw;font-variant-numeric:lining-nums tabular-nums}
+.relogio div{display:flex;flex-direction:column;align-items:center;line-height:1}
+.relogio b{font-size:8.5cqw;font-weight:600;color:var(--azul)}
+.relogio span{font-style:italic;font-size:3.3cqw;color:var(--apagado);margin-top:.8cqw}
 
 /* ---------- história ---------- */
 .historia p{max-width:34ch;margin:0 auto}
@@ -324,17 +330,24 @@ footer .faixa{height:64px;margin-top:30px}
     </div>
   </header>
 
-  <section aria-labelledby="t-contagem">
-    <h2 id="t-contagem">Falta pouco</h2>
-    <div class="janela-wrap">
-      <div class="veneziana" aria-hidden="true"></div>
-      <div class="janela" role="timer" aria-live="off">
-        <div class="vidro"><b id="cd-d">0</b><span>dias</span></div>
-        <div class="vidro"><b id="cd-h">0</b><span>horas</span></div>
-        <div class="vidro"><b id="cd-m">0</b><span>minutos</span></div>
-        <div class="vidro"><b id="cd-s">0</b><span>segundos</span></div>
+  <section class="contagem" aria-labelledby="t-contagem">
+    <div class="quadro">
+      <img class="arte-fundo" src="arte/janela.webp" alt="" loading="lazy">
+      <div aria-hidden="true">
+        <i class="petala" style="--x:12%;--y:8%;--t:12s;--atraso:-3s;--dx:14cqw"></i>
+        <i class="petala" style="--x:30%;--y:14%;--t:14s;--atraso:-8s;--dx:10cqw"></i>
+        <i class="petala" style="--x:45%;--y:4%;--t:11s;--atraso:-1s;--dx:-8cqw"></i>
+        <i class="petala" style="--x:92%;--y:30%;--t:13s;--atraso:-6s;--dx:-12cqw"></i>
       </div>
-      <div class="veneziana" aria-hidden="true"></div>
+      <div class="no-vao">
+        <h2 id="t-contagem">Falta pouco</h2>
+        <div class="relogio" role="timer" aria-live="off">
+          <div><b id="cd-d">0</b><span>dias</span></div>
+          <div><b id="cd-h">0</b><span>horas</span></div>
+          <div><b id="cd-m">0</b><span>minutos</span></div>
+          <div><b id="cd-s">0</b><span>segundos</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
