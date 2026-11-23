@@ -35,12 +35,13 @@ const CONVITE = {
   recepcao:  { titulo: "Recepção", nome: "Sítio da Tia Lu", endereco: "Endereço a definir", hora: "16h00", mapa: "" }, // null se não houver
 
   programacao: [
-    { hora: "14h00", item: "Cerimônia civil no cartório" },
-    { hora: "16h00", item: "Recepção no Sítio da Tia Lu" },
-    { hora: "17h00", item: "Fotos e coquetel" },
-    { hora: "19h00", item: "Jantar" },
-    { hora: "20h30", item: "Bolo e brinde" },
-    { hora: "21h00", item: "Primeira dança e festa" },
+    // texto: uma frase curta sobre o momento (opcional)
+    { hora: "14h00", item: "Cerimônia civil", texto: "O nosso sim no cartório, com a família por perto." },
+    { hora: "16h00", item: "Recepção no Sítio da Tia Lu", texto: "Chegada dos convidados e boas-vindas." },
+    { hora: "17h00", item: "Fotos e coquetel", texto: "Drinks, petiscos e fotos com todo mundo." },
+    { hora: "19h00", item: "Jantar", texto: "Mesa posta para celebrar juntos." },
+    { hora: "20h30", item: "Bolo e brinde", texto: "Hora de erguer as taças." },
+    { hora: "21h00", item: "Primeira dança e festa", texto: "Pista aberta até o fim da noite." },
   ],
 
   traje: "Esporte fino",
@@ -246,11 +247,20 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:260px;margin:8px auto 34px;font-size:16px;line-height:30px}
 .cal .dsem{font-style:italic;color:var(--apagado)}
 .cal .dia-casamento{background:var(--azul);color:var(--cal);border-radius:50%;font-weight:600;box-shadow:0 0 0 2px var(--cal),0 0 0 4px var(--ocre)}
-.linha{list-style:none;padding:0;margin:0 auto;max-width:300px;text-align:left;position:relative}
-.linha::before{content:"";position:absolute;left:74px;top:14px;bottom:14px;width:2px;background:var(--ocre)}
-.linha li{display:grid;grid-template-columns:62px 1fr;gap:28px;padding:10px 0;position:relative}
-.linha li::before{content:"";position:absolute;left:67px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--cal);border:2px solid var(--azul)}
-.linha time{font-weight:600;text-align:right;color:var(--azul)}
+/* linha do tempo: o trilho se enche de azul conforme a rolagem e cada horário aparece ao chegar na tela */
+.linha{--progresso:0;list-style:none;padding:0;margin:8px auto 0;max-width:360px;text-align:left;position:relative}
+.linha::before,.linha::after{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;border-radius:2px}
+.linha::before{background:rgba(31,74,138,.15)}
+.linha::after{background:var(--azul);transform-origin:top;transform:scaleY(var(--progresso))}
+.linha li{position:relative;padding:0 0 38px 42px}
+.linha li:last-child{padding-bottom:0}
+.linha li::before{content:"";position:absolute;left:2px;top:7px;width:16px;height:16px;border-radius:50%;background:var(--cal);border:2px solid var(--azul);box-sizing:border-box;z-index:1;transition:background .5s,box-shadow .5s}
+.linha time{display:block;font-size:26px;font-weight:600;line-height:1.1;color:var(--azul);font-variant-numeric:lining-nums}
+.linha h3{font-size:21px;font-weight:600;line-height:1.25;color:var(--tinta);margin-top:2px}
+.linha p{font-size:17px;line-height:1.45;color:var(--apagado);margin-top:4px}
+.linha.anima li{opacity:0;translate:0 28px;transition:opacity .7s ease,translate .7s ease}
+.linha.anima li.visivel{opacity:1;translate:0 0}
+.linha li.visivel::before{background:var(--azul);box-shadow:0 0 0 5px rgba(31,74,138,.15)}
 
 /* ---------- presentes ---------- */
 .presentes p{max-width:32ch;margin:0 auto}
@@ -520,11 +530,32 @@ C.fotos.forEach((src, i) => {
 })();
 C.programacao.forEach(p => {
   const li = document.createElement('li');
-  li.innerHTML = '<time></time><span></span>';
-  li.firstChild.textContent = p.hora;
-  li.lastChild.textContent = p.item;
+  li.innerHTML = '<time></time><h3></h3><p></p>';
+  li.querySelector('time').textContent = p.hora;
+  li.querySelector('h3').textContent = p.item;
+  li.querySelector('p').textContent = p.texto || '';
   $('programacao').append(li);
 });
+// revela cada horário ao entrar na tela; sem suporte ou com movimento reduzido, tudo aparece de uma vez
+(function linhaDoTempo() {
+  const linha = $('programacao');
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    linha.style.setProperty('--progresso', 1);
+    linha.querySelectorAll('li').forEach(li => li.classList.add('visivel'));
+    return;
+  }
+  linha.classList.add('anima');
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visivel'); obs.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -15% 0px' });
+  linha.querySelectorAll('li').forEach(li => obs.observe(li));
+  const progresso = () => {
+    const r = linha.getBoundingClientRect();
+    linha.style.setProperty('--progresso', Math.min(1, Math.max(0, (innerHeight * .75 - r.top) / r.height)));
+  };
+  addEventListener('scroll', progresso, { passive: true });
+  progresso();
+})();
 
 // ---------- traje e presentes ----------
 $('s-traje').hidden = !C.traje;
