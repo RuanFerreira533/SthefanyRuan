@@ -204,6 +204,10 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 .emenda{position:relative;height:0;z-index:2}
 .emenda::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:777/258;transform:translateY(-50%);background:url(arte/guirlanda.webp) center/100% 100% no-repeat;pointer-events:none}
 
+/* ---------- corda na emenda entre a janela e a nossa história (arte/corda.webp, 1000x78, fundo transparente) ---------- */
+.corda{position:relative;height:0;z-index:2}
+.corda::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:1000/78;transform:translateY(-50%);background:url(arte/corda.webp) center/100% 100% no-repeat;pointer-events:none}
+
 /* ---------- contagem: a janela ---------- */
 /* Arte: arte/janela.webp (941x1672). Vão da janela: x 286–674, y 641–1183; o gato dorme no canto de baixo à direita,
    então os números ficam em x 300–660, y 660–1100 (em %: 31.9 / 39.5 / 38.3 / 26.3). Usa o mesmo .quadro da capa. */
@@ -371,6 +375,7 @@ footer .faixa{height:64px;margin-top:30px}
     </div>
   </section>
 
+  <div class="corda" aria-hidden="true"></div>
   <section class="historia" id="s-historia" aria-labelledby="t-historia">
     <h2 id="t-historia">Nossa história</h2>
     <div id="historia-texto" style="margin-top:26px"></div>
