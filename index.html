@@ -206,6 +206,10 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 
 /* ---------- corda na emenda entre a janela e a nossa história (arte/corda.webp, 1000x78, fundo transparente) ---------- */
 .corda{position:relative;height:0;z-index:2}
+.gato-corda{position:absolute;left:50%;top:0;width:min(24%,120px);translate:-40.4% -3.5%;transform-origin:40.4% 3.5%;animation:pendurado 4s ease-in-out infinite alternate;pointer-events:none} /* arte/gato-corda.webp (450x1242): patinhas em 40.4% x 3.5%, presas na corda */
+@keyframes pendurado{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){.gato-corda{animation:none}}
+.historia{padding-top:calc(min(24vw,120px) * 2.76 + 32px)} /* espaço para o gatinho pendurado acima do título */
 .corda::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:1000/78;transform:translateY(-50%);background:url(arte/corda.webp) center/100% 100% no-repeat;pointer-events:none}
 
 /* ---------- contagem: a janela ---------- */
@@ -375,7 +379,7 @@ footer .faixa{height:64px;margin-top:30px}
     </div>
   </section>
 
-  <div class="corda" aria-hidden="true"></div>
+  <div class="corda" aria-hidden="true"><img class="gato-corda" src="arte/gato-corda.webp" alt="" loading="lazy"></div>
   <section class="historia" id="s-historia" aria-labelledby="t-historia">
     <h2 id="t-historia">Nossa história</h2>
     <div id="historia-texto" style="margin-top:26px"></div>
