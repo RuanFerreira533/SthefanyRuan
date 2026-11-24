@@ -206,10 +206,10 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 
 /* ---------- corda na emenda entre a janela e a nossa história (arte/corda.webp, 1000x78, fundo transparente) ---------- */
 .corda{position:relative;height:0;z-index:2}
-.gato-corda{position:absolute;left:50%;top:0;width:min(24%,120px);translate:-40.4% -3.5%;transform-origin:40.4% 3.5%;animation:pendurado 4s ease-in-out infinite alternate;pointer-events:none} /* arte/gato-corda.webp (450x1242): patinhas em 40.4% x 3.5%, presas na corda */
+.gato-corda{position:absolute;left:50%;top:0;width:min(24%,120px);translate:-44.4% -14.9%;transform-origin:44.4% 14.9%;animation:pendurado 4s ease-in-out infinite alternate;pointer-events:none} /* arte/gato-corda.webp (444x1190): patinhas em 44.4% x 14.9%, presas na corda; a cabeça fica acima dela */
 @keyframes pendurado{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
 @media (prefers-reduced-motion:reduce){.gato-corda{animation:none}}
-.historia{padding-top:calc(min(24vw,120px) * 2.76 + 32px)} /* espaço para o gatinho pendurado acima do título */
+.historia{padding-top:calc(min(24vw,120px) * 2.68 * .851 + 32px)} /* espaço para o gatinho pendurado acima do título */
 .corda::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:1000/78;transform:translateY(-50%);background:url(arte/corda.webp) center/100% 100% no-repeat;pointer-events:none}
 
 /* ---------- contagem: a janela ---------- */
