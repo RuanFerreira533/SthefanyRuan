@@ -65,15 +65,11 @@ const CONVITE = {
   rsvp: {
     url: "",                        // endereço do Google Apps Script (vazio = modo de exemplo, nada é enviado)
     prazo: "1 de dezembro de 2026",
+    maxPessoas: 5,                  // até quantas pessoas cada resposta pode confirmar
   },
 
   musica: "",                       // ex.: "musica.mp3"
 
-  // Um convite por linha. O link fica: seusite.com/?c=CODIGO
-  // shortcut: lista visível no código da página; mover para a planilha antes de publicar.
-  convidados: {
-    sthefany: { nome: "Sthefany", max: 1 },
-  },
 };
 </script>
 
@@ -488,8 +484,6 @@ const fmt = o => new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo
 const maiuscula = s => s.charAt(0).toUpperCase() + s.slice(1);
 const mapa = l => l.mapa || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.nome + ', ' + l.endereco);
 
-const codigo = new URLSearchParams(location.search).get('c');
-const convidado = codigo && Object.hasOwn(C.convidados, codigo) ? C.convidados[codigo] : null;
 
 // ---------- textos ----------
 const nomes = `${C.noiva} & ${C.noivo}`;
@@ -505,9 +499,6 @@ $('ano').textContent = fmt({ year: 'numeric' });
 $('local-capa').textContent = `às ${horaCerimonia}, em ${C.cidade}`;
 $('rodape-nomes').textContent = nomes;
 $('rodape-data').textContent = fmt({ day: 'numeric', month: 'long', year: 'numeric' });
-if (convidado) {
-  $('placa').textContent = `Para ${convidado.nome}`;
-}
 
 // ---------- contagem ----------
 function partes(ms) {
@@ -600,9 +591,8 @@ $('copiar-pix').addEventListener('click', e => {
 });
 
 // ---------- confirmação ----------
-const max = convidado ? convidado.max : 1;
+const max = C.rsvp.maxPessoas || 1;
 $('prazo').textContent = C.rsvp.prazo ? `Por favor, confirme até ${C.rsvp.prazo}` : '';
-if (convidado) { $('nome').value = convidado.nome; $('nome').readOnly = true; }
 for (let i = 1; i <= max; i++) $('pessoas').add(new Option(i === 1 ? '1 pessoa' : `${i} pessoas`, i));
 const atualizaPessoas = () => { $('linha-pessoas').hidden = max === 1 || $('form-rsvp').vai.value === 'nao'; };
 $('form-rsvp').addEventListener('change', atualizaPessoas);
@@ -614,7 +604,7 @@ $('form-rsvp').addEventListener('submit', async e => {
   if (!nome) { f.nome.focus(); f.nome.setCustomValidity('Escreva seu nome'); f.nome.reportValidity(); return; }
   f.nome.setCustomValidity('');
   const vai = f.vai.value === 'sim';
-  const dados = { codigo: codigo || '', nome, vai: vai ? 'Sim' : 'Não', pessoas: vai ? f.pessoas.value : 0, recado: f.recado.value.trim() };
+  const dados = { nome, vai: vai ? 'Sim' : 'Não', pessoas: vai ? f.pessoas.value : 0, recado: f.recado.value.trim() };
   $('enviar').disabled = true;
   $('enviar').textContent = 'Enviando…';
   let aviso = '';
