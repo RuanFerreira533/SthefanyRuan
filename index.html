@@ -212,12 +212,12 @@ body.travado :is(.camada,.petala){animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.camada{animation:none}.petala{display:none}}
 
 /* ---------- aviso para rolar, no pé da capa: aparece depois de entrar pela porta e some ao rolar ---------- */
-.role{position:absolute;left:50%;bottom:calc(2.5% + env(safe-area-inset-bottom));translate:-50% 0;z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 46px 8px;background:radial-gradient(closest-side,rgba(255,248,236,.92),rgba(255,248,236,.75) 55%,rgba(255,248,236,0));color:var(--azul);opacity:0;transition:opacity .6s}
+.role{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));pointer-events:none;translate:-50% 0;z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 46px 8px;background:radial-gradient(closest-side,rgba(255,248,236,.92),rgba(255,248,236,.75) 55%,rgba(255,248,236,0));color:var(--azul);opacity:0;transition:opacity .6s}
 .role span{font-family:'Great Vibes',cursive;font-size:25px;line-height:1;white-space:nowrap}
 .role i{position:relative;width:1px;height:30px;background:linear-gradient(rgba(31,74,138,.45),rgba(31,74,138,0))}
 .role i::after{content:"";position:absolute;left:-2.5px;top:0;width:6px;height:6px;border-radius:50%;background:#C8416E;animation:desce 1.8s ease-in-out infinite}
 body:not(.travado) .role{opacity:1;transition-delay:.8s}
-body.rolou .role{opacity:0;transition-delay:0s}
+body.no-fim .role{opacity:0;transition-delay:0s} /* fica na tela o tempo todo e só some ao chegar no fim do convite */
 @keyframes desce{0%{transform:translateY(0);opacity:0}25%{opacity:1}100%{transform:translateY(26px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.role i::after{animation:none;top:12px}}
 
@@ -350,7 +350,6 @@ footer .rodape-arte{display:block;width:100%;height:auto;margin-top:8px} /* arte
 
 <main id="conteudo">
   <header class="capa">
-    <p class="role" aria-hidden="true"><span>role para ver o convite</span><i></i></p>
     <div class="quadro">
     <div class="camada fundo"></div>
     <div class="camada galhoA" aria-hidden="true"></div>
@@ -477,6 +476,7 @@ footer .rodape-arte{display:block;width:100%;height:auto;margin-top:8px} /* arte
     <img class="rodape-arte" src="arte/rodape.png" alt="" loading="lazy">
   </footer>
 </main>
+<p class="role" aria-hidden="true"><span>role para ver o convite</span><i></i></p>
 
 <button id="musica" aria-label="Música" aria-pressed="false" hidden>
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18.5a3 3 0 1 1-2-2.83V5l12-2v11.5a3 3 0 1 1-2-2.83V6.36L9 7.7z"/></svg>
@@ -649,8 +649,10 @@ if (audio) {
   audio.addEventListener('pause', () => $('musica').setAttribute('aria-pressed', 'false'));
 }
 
-// some com o aviso de rolar assim que a pessoa começa a descer
-addEventListener("scroll", () => document.body.classList.toggle("rolou", scrollY > 60), { passive: true });
+// o aviso de rolar some quando a pessoa chega no fim do convite
+const fimDoConvite = () => document.body.classList.toggle("no-fim", scrollY + innerHeight >= document.documentElement.scrollHeight - 160);
+addEventListener("scroll", fimDoConvite, { passive: true });
+addEventListener("resize", fimDoConvite);
 
 // ---------- abrir a porta ----------
 // 100vh/100dvh nem sempre batem com a área visível no celular; mede a tela de verdade.
